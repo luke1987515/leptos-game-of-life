@@ -4,16 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Leptos Game of Life</title>
-  
+
   <!-- PWA 設定 -->
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#121212">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
 
-  <!-- Trunk 資源標籤 -->
-  <link rel="stylesheet" href="/assets/style.css">
-  <link rel="copy-file" href="manifest.json">
-  <link rel="copy-file" href="sw.js">
+  <!-- Trunk 專屬資源標籤 (注意 data-trunk 屬性) -->
+  <link data-trunk rel="css" href="assets/style.css" />
+  <link data-trunk rel="copy-file" href="manifest.json" />
+  <link data-trunk rel="copy-file" href="sw.js" />
+  <link data-trunk rel="copy-dir" href="assets" />
 </head>
 <body style="background-color: #121212; margin: 0; color: white;">
 

@@ -17,8 +17,8 @@ pub fn GameCanvas() -> impl IntoView {
 
     let canvas_ref = create_node_ref::<html::Canvas>();
 
-    // Canvas 繪圖邏輯
-    let draw = move || {
+    // Canvas 繪圖 logic - 抽出純繪圖邏輯
+    let render_to_canvas = move |uni: &Universe| {
         if let Some(canvas) = canvas_ref.get() {
             let ctx = canvas
                 .get_context("2d")
@@ -27,7 +27,6 @@ pub fn GameCanvas() -> impl IntoView {
                 .dyn_into::<CanvasRenderingContext2d>()
                 .unwrap();
 
-            let uni = universe.get();
             let c_width = canvas.width() as f64;
             let c_height = canvas.height() as f64;
 
@@ -53,6 +52,12 @@ pub fn GameCanvas() -> impl IntoView {
         }
     };
 
+    // ✅ 自動響應繪圖：只要 universe 變更，就會自動重新繪製 Canvas！
+    create_effect(move |_| {
+        let uni = universe.get(); // 在 Effect 內部讀取 Signal，建立正確的追蹤關係
+        render_to_canvas(&uni);
+    });
+
     // 處理 Canvas 滑鼠點擊切換狀態
     let handle_canvas_click = move |e: MouseEvent| {
         if let Some(canvas) = canvas_ref.get() {
@@ -65,7 +70,7 @@ pub fn GameCanvas() -> impl IntoView {
 
             if row < height && col < width {
                 set_universe.update(|u| u.toggle_cell(row, col));
-                draw();
+                // 不需要手動呼叫 draw()，Effect 會自動抓到 universe 的改變！
             }
         }
     };
@@ -76,16 +81,14 @@ pub fn GameCanvas() -> impl IntoView {
             let interval_ms = speed_ms.get();
             let handle = gloo_timers::callback::Interval::new(interval_ms as u32, move || {
                 set_universe.update(|u| u.tick());
-                draw();
+                // 不需要手動呼叫 draw()
             });
             on_cleanup(move || drop(handle));
         }
     });
 
-    // 初次掛載時繪製一次
-    create_effect(move |_| {
-        draw();
-    });
+    let canvas_w = ((CELL_SIZE + 1.0) * width as f64 + 1.0) as u32;
+    let canvas_h = ((CELL_SIZE + 1.0) * height as f64 + 1.0) as u32;
 
     view! {
         <div style="display: flex; flex-direction: column; align-items: center; padding: 20px;">
@@ -99,16 +102,16 @@ pub fn GameCanvas() -> impl IntoView {
 
                 <button 
                     disabled=move || is_running.get()
-                    on:click=move |_| { set_universe.update(|u| u.tick()); draw(); }
+                    on:click=move |_| set_universe.update(|u| u.tick())
                 >
                     "Step ⏭"
                 </button>
 
-                <button on:click=move |_| { set_universe.update(|u| u.random_fill()); draw(); }>
+                <button on:click=move |_| set_universe.update(|u| u.random_fill())>
                     "Randomize 🔀"
                 </button>
 
-                <button on:click=move |_| { set_universe.update(|u| u.clear()); draw(); }>
+                <button on:click=move |_| set_universe.update(|u| u.clear())>
                     "Clear 🗑"
                 </button>
 
@@ -136,8 +139,8 @@ pub fn GameCanvas() -> impl IntoView {
             <canvas
                 node_ref=canvas_ref
                 on:click=handle_canvas_click
-                width={(CELL_SIZE + 1.0) * width as f64 + 1.0}
-                height={(CELL_SIZE + 1.0) * height as f64 + 1.0}
+                width=canvas_w
+                height=canvas_h
                 style="border: 1px solid #333; cursor: pointer; border-radius: 4px;"
             />
         </div>
