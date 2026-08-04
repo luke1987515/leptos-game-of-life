@@ -1,5 +1,5 @@
 use leptos::*;
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, MouseEvent};
+use web_sys::{CanvasRenderingContext2d, MouseEvent};
 use wasm_bindgen::JsCast;
 use crate::game::{Universe, Cell};
 
@@ -32,11 +32,11 @@ pub fn GameCanvas() -> impl IntoView {
             let c_height = canvas.height() as f64;
 
             // 清空畫布 (背景色)
-            ctx.set_fill_style(&"#1a1a1a".into());
+            ctx.set_fill_style_str("#1a1a1a");
             ctx.fill_rect(0.0, 0.0, c_width, c_height);
 
             // 繪製活細胞
-            ctx.set_fill_style(&"#00FF66".into());
+            ctx.set_fill_style_str("#00FF66");
             for row in 0..uni.height() {
                 for col in 0..uni.width() {
                     let idx = uni.get_index(row, col);
