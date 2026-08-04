@@ -18,14 +18,61 @@
 </head>
 <body style="background-color: #121212; margin: 0; color: white;">
 
+  <!-- 🚀 發現新版本更新提示條 -->
+  <div id="pwa-update-banner" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 9999; text-align: center; font-size: 14px; border: 1px solid #444;">
+    🚀 發現新版本！
+    <button id="pwa-update-btn" style="margin-left: 10px; padding: 6px 12px; background: #00FF66; color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
+      立即更新
+    </button>
+  </div>
+
+  <!-- 註冊與監聽 Service Worker 更新 -->
   <script>
-    // 註冊 Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('SW 註冊成功!', reg))
-          .catch(err => console.error('SW 註冊失敗:', err));
+        // 使用相對路徑 ./sw.js 以利 GitHub Pages 等子路徑環境
+        navigator.serviceWorker.register('./sw.js').then((registration) => {
+          console.log('SW 註冊成功!', registration);
+
+          // 檢查是否有正在等待的 Worker
+          if (registration.waiting) {
+            showUpdateBanner(registration.waiting);
+          }
+
+          // 監聽是否有新版本正在安裝
+          registration.onupdatefound = () => {
+            const installingWorker = registration.installing;
+            if (installingWorker) {
+              installingWorker.onstatechange = () => {
+                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  showUpdateBanner(installingWorker);
+                }
+              };
+            }
+          };
+        }).catch(err => console.error('SW 註冊失敗:', err));
       });
+
+      let refreshing = false;
+      // 當新版本接管後，自動重新整理頁面
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+    }
+
+    function showUpdateBanner(worker) {
+      const banner = document.getElementById('pwa-update-banner');
+      const btn = document.getElementById('pwa-update-btn');
+      if (banner && btn) {
+        banner.style.display = 'block';
+        btn.onclick = () => {
+          // 發送指令給 sw.js 進行跳過等待
+          worker.postMessage({ type: 'SKIP_WAITING' });
+        };
+      }
     }
   </script>
 </body>

@@ -1,11 +1,28 @@
-const CACHE_NAME = 'game-of-life-v1';
+const CACHE_NAME = 'game-of-life-v1_0_1';
 
+// 安裝 Service Worker
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
+// 當新的 SW 啟動並接管時，清除舊快取並立即控制頁面
 self.addEventListener('activate', (event) => {
-  event.waitUntil(clients.claim());
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          return caches.delete(cache);
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+// 監聽來自網頁端的訊息 (接收 SKIP_WAITING 指令)
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', (event) => {
