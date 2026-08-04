@@ -58,6 +58,9 @@ pub fn GameCanvas() -> impl IntoView {
         render_to_canvas(&uni);
     });
 
+    let canvas_w = ((CELL_SIZE + 1.0) * width as f64 + 1.0) as u32;
+    let canvas_h = ((CELL_SIZE + 1.0) * height as f64 + 1.0) as u32;
+
     // 處理 Canvas 滑鼠點擊切換狀態
     let handle_canvas_click = move |e: MouseEvent| {
         if let Some(canvas) = canvas_ref.get() {
@@ -65,12 +68,24 @@ pub fn GameCanvas() -> impl IntoView {
             let click_x = e.client_x() as f64 - rect.left();
             let click_y = e.client_y() as f64 - rect.top();
 
-            let col = (click_x / (CELL_SIZE + 1.0)).floor() as u32;
-            let row = (click_y / (CELL_SIZE + 1.0)).floor() as u32;
+            // 取得 Canvas 實際 CSS 渲染出來的寬高[cite: 4]
+            let css_width = rect.width();
+            let css_height = rect.height();
+
+            // 計算縮放比例 (實際點擊像素 / CSS顯示像素)
+            let scale_x = canvas_w as f64 / css_width;
+            let scale_y = canvas_h as f64 / css_height;
+
+            // 將點擊座標還原為 Canvas 内部的真實座標
+            let real_x = click_x * scale_x;
+            let real_y = click_y * scale_y;
+
+            let col = (real_x / (CELL_SIZE + 1.0)).floor() as u32;
+            let row = (real_y / (CELL_SIZE + 1.0)).floor() as u32;
 
             if row < height && col < width {
                 set_universe.update(|u| u.toggle_cell(row, col));
-                // 不需要手動呼叫 draw()，Effect 會自動抓到 universe 的改變！
+				// 不需要手動呼叫 draw()，Effect 會自動抓到 universe 的改變！
             }
         }
     };
@@ -87,15 +102,12 @@ pub fn GameCanvas() -> impl IntoView {
         }
     });
 
-    let canvas_w = ((CELL_SIZE + 1.0) * width as f64 + 1.0) as u32;
-    let canvas_h = ((CELL_SIZE + 1.0) * height as f64 + 1.0) as u32;
-
     view! {
-        <div style="display: flex; flex-direction: column; align-items: center; padding: 20px;">
+        <div>
             <h2>"Leptos + WebAssembly - Conway's Game of Life"</h2>
 
-            // 狀態與工具列
-            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
+            // 1. 套用 class="controls-container" 讓按鈕在手機自動折行
+            <div class="controls-container">
                 <button on:click=move |_| set_is_running.update(|r| *r = !*r)>
                     {move || if is_running.get() { "Pause ⏸" } else { "Play ▶" }}
                 </button>
@@ -115,33 +127,34 @@ pub fn GameCanvas() -> impl IntoView {
                     "Clear 🗑"
                 </button>
 
-                <label style="display: flex; align-items: center; gap: 5px;">
-                    "Interval: " {move || speed_ms.get()} "ms"
-                    <input 
-                        type="range" min="10" max="200" step="5"
-                        value=move || speed_ms.get()
-                        on:input=move |e| {
-                            if let Ok(val) = event_target_value(&e).parse::<u64>() {
-                                set_speed_ms.set(val);
+                <div class="control-group">
+                    <label style="display: flex; align-items: center; gap: 5px;">
+                        "Interval: " {move || speed_ms.get()} "ms"
+                        <input 
+                            type="range" min="10" max="200" step="5"
+                            value=move || speed_ms.get()
+                            on:input=move |e| {
+                                if let Ok(val) = event_target_value(&e).parse::<u64>() {
+                                    set_speed_ms.set(val);
+                                }
                             }
-                        }
-                    />
-                </label>
+                        />
+                    </label>
+                </div>
             </div>
 
-            // 統計數據
-            <div style="display: flex; gap: 20px; margin-bottom: 15px; color: #aaa;">
+            // 2. 統計數據 套用 class="status-info"
+            <div class="status-info">
                 <div>"Generation: " <strong>{move || universe.get().generation()}</strong></div>
                 <div>"Alive Cells: " <strong>{move || universe.get().live_count()}</strong></div>
             </div>
 
-            // 遊戲 Canvas
+            // 3. 遊戲 Canvas (移除內聯 style，完全交給 style.css 掌控自適應縮放)
             <canvas
                 node_ref=canvas_ref
                 on:click=handle_canvas_click
                 width=canvas_w
                 height=canvas_h
-                style="border: 1px solid #333; cursor: pointer; border-radius: 4px;"
             />
         </div>
     }
