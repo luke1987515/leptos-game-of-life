@@ -2,7 +2,7 @@
 
 你可以直接複製下方內容並儲存為專案根目錄下的 `README.md`：
 
-```markdown
+
 # 🧬 Leptos + WebAssembly - Conway's Game of Life (PWA)
 
 一個基於 **Rust**、**Leptos (CSR)** 與 **WebAssembly** 開發的高效能「康威生命遊戲（Conway's Game of Life）」網頁應用程式。支援響應式介面（RWD）與 PWA（Progressive Web App）離線存取，可直接安裝至手機與桌面，並具備自動偵測新版本更新機制。
