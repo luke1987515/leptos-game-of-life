@@ -8,6 +8,10 @@
 一個基於 **Rust**、**Leptos (CSR)** 與 **WebAssembly** 開發的高效能「康威生命遊戲（Conway's Game of Life）」網頁應用程式。支援響應式介面（RWD）與 PWA（Progressive Web App）離線存取，可直接安裝至手機與桌面，並具備自動偵測新版本更新機制。
 > 🤖 **開發聲明**：本專案架構、核心程式碼與 PWA 設定由 **Google Gemini 3.6 Flash** 協助生成與輔助開發。
 
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=github)](https://luke1987515.github.io/leptos-game-of-life/)
+
+👉 **線上展示 (Live Demo)**：[https://luke1987515.github.io/leptos-game-of-life/](https://luke1987515.github.io/leptos-game-of-life/)
+
 ---
 
 ## ✨ 專案亮點
@@ -94,6 +98,16 @@ trunk serve
 ---
 
 ## 📦 打包與部署 (Build & Deployment)
+
+專案已透過 **GitHub Pages** 進行託管與部署。
+
+請參考 deploy.yml 文件
+
+```text
+├───.github
+│   └───workflows
+│           deploy.yml
+```
 
 ### 1. 手動生產環境打包
 
