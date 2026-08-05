@@ -6,6 +6,7 @@
 # 🧬 Leptos + WebAssembly - Conway's Game of Life (PWA)
 
 一個基於 **Rust**、**Leptos (CSR)** 與 **WebAssembly** 開發的高效能「康威生命遊戲（Conway's Game of Life）」網頁應用程式。支援響應式介面（RWD）與 PWA（Progressive Web App）離線存取，可直接安裝至手機與桌面，並具備自動偵測新版本更新機制。
+> 🤖 **開發聲明**：本專案架構、核心程式碼與 PWA 設定由 **Google Gemini 3.6 Flash** 協助生成與輔助開發。
 
 ---
 
@@ -26,6 +27,7 @@
 - **打包工具**：[Trunk](https://trunkrs.dev/)
 - **樣式與繪圖**：CSS3 / HTML5 Canvas API
 - **離線與安裝**：PWA (Service Worker + Manifest)
+- **AI 協作夥伴**：Google Gemini 3.6 Flash
 
 ---
 
@@ -136,6 +138,8 @@ const CACHE_NAME = 'game-of-life-v2';
 2. **Service Worker 作用域**：
 `index.html` 註冊 Service Worker 時建議使用相對路徑 `./sw.js`，以避免在 GitHub Pages 等帶有子路徑（Subpath）的環境下出現 `404 Not Found` 註冊失敗。
 
-```
+---
 
-```
+## 🤝 致謝與開發聲明 (Acknowledgements)
+
+本專案之 Rust / Leptos 邏輯、Canvas 座標校正算法、PWA 離線架構與 README 文件，均由 **Google Gemini 3.6 Flash** 生成與協助調校。
